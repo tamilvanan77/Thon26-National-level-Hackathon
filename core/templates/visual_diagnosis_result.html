@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .result-container {
+        max-width: 900px;
+        margin: 3rem auto;
+    }
+    
+    .result-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .result-header {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .doctor-card {
+        background: #f8f9ff;
+        border: 1px solid #eef2ff;
+        border-radius: 15px;
+        padding: 1.25rem;
+        transition: transform 0.3s;
+    }
+
+    .doctor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.1);
+    }
+
+    .badge-spec {
+        background: #eef4ff;
+        color: #0d6efd;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+</style>
+
+<div class="result-container anim-slide-up">
+    <div class="result-card mb-5">
+        <div class="result-header">
+            <h6 class="text-uppercase opacity-75 fw-bold mb-2 ls-1">AI Diagnostic Insight</h6>
+            <h1 class="fw-bold mb-0">{{ diagnosis.disease_prediction }}</h1>
+        </div>
+        
+        <div class="p-5">
+            <div class="row g-5">
+                <div class="col-md-6 border-end">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-shield-check me-2"></i>AI Analysis Result</h5>
+                    <p class="text-dark">{{ diagnosis.solution }}</p>
+                    
+                    <div class="mt-5">
+                        <h6 class="fw-bold text-muted small text-uppercase">Recommended Specialist</h6>
+                        <div class="d-inline-block px-3 py-2 rounded-pill bg-primary bg-opacity-10 text-primary fw-bold">
+                            <i class="bi bi-person-badge-fill me-1"></i> {{ diagnosis.recommended_specialization }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-image me-2"></i>Analysis Context</h5>
+                    <div class="rounded-3 overflow-hidden border mb-3">
+                        <img src="{{ diagnosis.image.url }}" class="img-fluid" alt="Diagnosis Image">
+                    </div>
+                    {% if diagnosis.extracted_text %}
+                    <div class="bg-light p-3 rounded-3">
+                        <h6 class="extra-small fw-bold text-uppercase text-muted">Parsed Text</h6>
+                        <p class="small text-muted mb-0 font-monospace" style="max-height: 100px; overflow-y: auto;">
+                            {{ diagnosis.extracted_text|truncatechars:500 }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctor Recommendations -->
+    <div class="anim-slide-up anim-delay-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">Recommended verified doctors</h4>
+            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">View More</a>
+        </div>
+        
+        <div class="row g-4">
+            {% for doctor in recommended_doctors %}
+            <div class="col-md-4">
+                <div class="doctor-card h-100 text-center">
+                    <div class="doctor-avatar mx-auto mb-3" style="width: 60px; height: 60px; line-height: 60px; background: #0d6efd; color: white; border-radius: 50%; font-size: 1.5rem; font-weight: bold;">
+                        {{ doctor.full_name|default:doctor.user.username|slice:":1"|upper }}
+                    </div>
+                    <h6 class="fw-bold mb-1">Dr. {{ doctor.full_name|default:doctor.user.username }}</h6>
+                    <span class="badge badge-spec rounded-pill mb-3 px-3">{{ doctor.specialization }}</span>
+                    <p class="extra-small text-muted mb-3"><i class="bi bi-hospital me-1"></i> {{ doctor.hospital_name|default:"City Hospital" }}</p>
+                    <a href="{% url 'appointment_request' %}" class="btn btn-sm btn-primary w-100 rounded-pill">Book Now</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4 bg-light rounded-4">
+                <p class="text-muted mb-0">No specific specialists found. Please consult a General Physician.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mt-5 text-center">
+        <a href="{% url 'visual_diagnosis' %}" class="btn btn-link text-decoration-none">
+            <i class="bi bi-arrow-left me-2"></i> Back to Image Upload
+        </a>
+    </div>
+</div>
+
+{% endblock %}

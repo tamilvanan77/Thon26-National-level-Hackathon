@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+        <div class="card shadow p-4">
+
+            <h3 class="text-center text-primary mb-3">
+                Prescription OCR Upload
+            </h3>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Upload Prescription Image</label>
+                    <input type="file" name="image" class="form-control" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Extract Text
+                </button>
+            </form>
+
+            {% if extracted_text %}
+                <hr>
+                <h5>Extracted Prescription Text:</h5>
+                <div class="alert alert-info">
+                    <pre>{{ extracted_text }}</pre>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

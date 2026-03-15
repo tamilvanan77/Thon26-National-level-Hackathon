@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 4rem auto;
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .drop-zone {
+        border: 2px dashed #0d6efd;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        background: #f8f9ff;
+    }
+
+    .drop-zone:hover {
+        background: #eef4ff;
+        border-color: #0a58ca;
+    }
+
+    .drop-zone i {
+        font-size: 3rem;
+        color: #0d6efd;
+    }
+
+    .analysis-loader {
+        display: none;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+
+    .analyzing-text {
+        animation: pulse 1.5s infinite;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+</style>
+
+<div class="upload-container anim-slide-up">
+    <div class="glass-card p-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">AI Visual Diagnosis</h2>
+            <p class="text-muted">Upload a medical image, prescription, or report for instant AI analysis.</p>
+        </div>
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="drop-zone mb-4" onclick="document.getElementById('imageInput').click()">
+                <i class="bi bi-cloud-arrow-up-fill mb-3 d-block"></i>
+                <h5 class="fw-bold">Click or drag image here</h5>
+                <p class="small text-muted mb-0">Supports JPG, PNG, WEBP (Max 5MB)</p>
+                <input type="file" name="image" id="imageInput" hidden accept="image/*" onchange="showLoading()">
+            </div>
+
+            <div id="loadingSection" class="analysis-loader text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="analyzing-text">Our medical AI is analyzing your image...</p>
+                <p class="small text-muted">This usually takes about 5-10 seconds.</p>
+            </div>
+
+            <div class="alert alert-info border-0 shadow-sm small py-3">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Medical Disclaimer:</strong> This tool is for educational purposes. AI analysis is not a substitute for professional clinical judgment. Always consult a verified doctor.
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow-sm" style="display: none;" id="submitBtn">
+                Start AI Analysis
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showLoading() {
+        const input = document.getElementById('imageInput');
+        if (input.files && input.files[0]) {
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('uploadForm').style.opacity = '0.6';
+            document.querySelector('.drop-zone').style.pointerEvents = 'none';
+            document.getElementById('uploadForm').submit();
+        }
+    }
+</script>
+
+{% endblock %}

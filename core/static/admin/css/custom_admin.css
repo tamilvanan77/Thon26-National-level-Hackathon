@@ -1,0 +1,214 @@
+/* 
+   custom_admin.css - Luxe Medical Theme for Care & Cure 
+   Premium, Glassmorphic, and Highly Functional
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --primary: #2563eb;
+    --primary-glow: rgba(37, 99, 235, 0.4);
+    --secondary: #0ea5e9;
+    --accent: #10b981;
+    --bg-main: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --sidebar-bg: #0f172a;
+    --text-primary: #1e293b;
+    --text-muted: #64748b;
+    --border-color: rgba(226, 232, 240, 0.8);
+    --radius-lg: 16px;
+    --radius-md: 10px;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem;
+}
+
+/* Header & Branding */
+#header {
+    background: var(--sidebar-bg) !important;
+    padding: 1.5rem 2.5rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+#branding h1 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+}
+
+#branding h1 span {
+    transition: all 0.3s ease;
+}
+
+#branding h1:hover span:first-child {
+    text-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    background: white !important;
+    padding: 1rem 2.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.breadcrumbs a {
+    color: var(--primary) !important;
+    font-weight: 600;
+}
+
+/* Sidebar/Nav */
+#nav-sidebar {
+    background: var(--sidebar-bg) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+#nav-sidebar .app-container {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+#nav-sidebar th, #nav-sidebar td {
+    padding: 12px 20px !important;
+}
+
+#nav-sidebar .section a {
+    color: #94a3b8 !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+
+#nav-sidebar .section a:hover {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Modules & Cards */
+.module {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    overflow: hidden !important;
+    margin-bottom: 2rem !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.module:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.module h2, .module caption {
+    background: rgba(241, 245, 249, 0.5) !important;
+    color: var(--text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    padding: 1.25rem 1.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    text-transform: none !important;
+}
+
+/* Table Styling */
+table {
+    width: 100% !important;
+}
+
+table thead th {
+    background: #f8fafc !important;
+    color: var(--text-muted) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 1rem 1.5rem !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+table tbody tr {
+    transition: background 0.2s ease;
+}
+
+table tbody tr:hover {
+    background-color: rgba(37, 99, 235, 0.03) !important;
+}
+
+table tbody td {
+    padding: 1rem 1.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    vertical-align: middle !important;
+}
+
+/* Buttons */
+.button, input[type=submit], .submit-row input {
+    background: var(--primary) !important;
+    color: white !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: var(--radius-md) !important;
+    font-weight: 600 !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 6px -1px var(--primary-glow) !important;
+}
+
+.button:hover, input[type=submit]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 15px -3px var(--primary-glow) !important;
+    filter: brightness(1.1);
+}
+
+.button.default, input[type=submit].default {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+}
+
+/* Form Inputs */
+input[type=text], input[type=password], input[type=email], textarea, select {
+    background: white !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+}
+
+input[type=text]:focus, textarea:focus, select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px var(--primary-glow) !important;
+    outline: none !important;
+}
+
+/* Dashboard Content Layout */
+#content-main {
+    padding: 2.5rem !important;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Stats/Visual components (if injected) */
+.object-tools {
+    margin-bottom: 2rem !important;
+}
+
+.object-tools a {
+    background: white !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.6rem 1.2rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.object-tools a:hover {
+    background: var(--primary) !important;
+    color: white !important;
+}

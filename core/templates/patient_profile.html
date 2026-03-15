@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row">
+
+    <!-- Patient Details Card -->
+    <div class="col-md-4">
+        <div class="card shadow p-3 mb-4">
+            <h4 class="text-primary">Patient Information</h4>
+            <hr>
+
+            <p><strong>Name:</strong> {{ patient.user.username }}</p>
+            <p><strong>Age:</strong> {{ patient.age }}</p>
+            <p><strong>Blood Pressure:</strong> {{ patient.blood_pressure }}</p>
+            <p><strong>Cholesterol:</strong> {{ patient.cholesterol }}</p>
+
+            {% if patient.qr_code %}
+            <hr>
+            <h6>Patient QR Code</h6>
+            <img src="{{ patient.qr_code.url }}" width="120">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- AI Analysis Card -->
+    <div class="col-md-8">
+        <div class="card shadow p-4 mb-4">
+            <h4 class="text-success">AI Health Analysis</h4>
+            <hr>
+
+            <h5>Risk Score: <span id="currentRiskScore">{{ analysis.risk_score }}</span>%</h5>
+
+            <p id="currentRiskLevel" class="
+                {% if analysis.level == 'Low Risk' %}text-success
+                {% elif analysis.level == 'Moderate Risk' %}text-warning
+                {% else %}text-danger
+                {% endif %}
+                fw-bold">
+                Risk Level: {{ analysis.level }}
+            </p>
+
+            <!-- Risk Graph -->
+            <canvas id="riskChart" width="250" height="250"></canvas>
+
+            <h5 class="mt-4">Clinical Alerts</h5>
+            {% if analysis.alerts %}
+                <ul class="list-group">
+                    {% for alert in analysis.alerts %}
+                        <li class="list-group-item list-group-item-danger">
+                            {{ alert }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-success">No critical alerts.</p>
+            {% endif %}
+
+            <h5 class="mt-4">Patient Summary</h5>
+            <p>{{ analysis.summary }}</p>
+
+            <!-- Correct Report Button -->
+            <a href="{% url 'report' patient.id %}" 
+               class="btn btn-primary mt-3">
+               View Full Report
+            </a>
+
+        </div>
+
+        <div class="card shadow p-4">
+            <h4 class="text-primary">Edit Patient Record</h4>
+            <hr>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="alert alert-light border">
+                    Live Risk Preview:
+                    <strong><span id="liveRiskScore">{{ analysis.risk_score }}</span>%</strong>
+                    <span id="liveRiskLevel" class="ms-2">{{ analysis.level }}</span>
+                </div>
+                <button type="submit" class="btn btn-success">Save Changes</button>
+            </form>
+        </div>
+
+        <div class="card shadow p-4 mt-4">
+            <h4 class="text-primary">Upload Prescription / Lab Report</h4>
+            <hr>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="upload_document">
+                {% for field in document_form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Upload Document</button>
+            </form>
+        </div>
+
+        <div class="card shadow p-4 mt-4">
+            <h4 class="text-primary">Patient Documents</h4>
+            {% if documents %}
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Title</th>
+                                <th>Uploaded By</th>
+                                <th>AI Parse</th>
+                                <th>Date</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for doc in documents %}
+                            <tr>
+                                <td>{{ doc.get_doc_type_display }}</td>
+                                <td>{{ doc.title }}</td>
+                                <td>{{ doc.uploaded_by.username }}</td>
+                                <td>{{ doc.get_verification_status_display }}</td>
+                                <td>{{ doc.created_at|date:"Y-m-d H:i" }}</td>
+                                <td><a href="{{ doc.file.url }}" target="_blank">Open</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="mb-0">No documents uploaded.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('riskChart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Risk', 'Safe'],
+        datasets: [{
+            data: [{{ analysis.risk_score }}, 100 - {{ analysis.risk_score }}],
+            backgroundColor: ['#dc3545', '#28a745']
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const fields = {
+        age: document.getElementById("id_age"),
+        blood_pressure: document.getElementById("id_blood_pressure"),
+        cholesterol: document.getElementById("id_cholesterol"),
+        diagnosis: document.getElementById("id_diagnosis"),
+        medications: document.getElementById("id_medications")
+    };
+
+    const liveRiskScore = document.getElementById("liveRiskScore");
+    const liveRiskLevel = document.getElementById("liveRiskLevel");
+    const currentRiskScore = document.getElementById("currentRiskScore");
+    const currentRiskLevel = document.getElementById("currentRiskLevel");
+    let debounceTimer = null;
+
+    function levelClass(level) {
+        if (level === "Low Risk") return "text-success";
+        if (level === "Moderate Risk") return "text-warning";
+        return "text-danger";
+    }
+
+    function updateRiskPreview() {
+        const params = new URLSearchParams({
+            age: fields.age?.value || "",
+            blood_pressure: fields.blood_pressure?.value || "",
+            cholesterol: fields.cholesterol?.value || "",
+            diagnosis: fields.diagnosis?.value || "",
+            medications: fields.medications?.value || ""
+        });
+
+        fetch("{% url 'risk_preview_api' %}?" + params.toString())
+            .then(response => response.json())
+            .then(data => {
+                liveRiskScore.textContent = data.risk_score;
+                liveRiskLevel.textContent = data.level;
+                liveRiskLevel.className = "ms-2 " + levelClass(data.level);
+                currentRiskScore.textContent = data.risk_score;
+                currentRiskLevel.textContent = "Risk Level: " + data.level;
+                currentRiskLevel.className = "fw-bold " + levelClass(data.level);
+            })
+            .catch(() => {});
+    }
+
+    Object.values(fields).forEach((field) => {
+        if (!field) return;
+        field.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(updateRiskPreview, 350);
+        });
+    });
+});
+</script>
+
+{% endblock %}

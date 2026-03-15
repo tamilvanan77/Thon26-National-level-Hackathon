@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="card shadow p-5 anim-slide-up">
+
+    <div class="text-center">
+        <h2 class="text-primary">Care & Cure</h2>
+        <p>AI Clinical Decision Support Report</p>
+        <hr>
+    </div>
+
+    <!-- Patient Info -->
+    <h4>Patient Information</h4>
+    <table class="table table-bordered">
+        <tr>
+            <th>Name</th>
+            <td>{{ patient.user.username }}</td>
+        </tr>
+        <tr>
+            <th>Age</th>
+            <td>{{ patient.age }}</td>
+        </tr>
+        <tr>
+            <th>Blood Pressure</th>
+            <td>{{ patient.blood_pressure }}</td>
+        </tr>
+        <tr>
+            <th>Cholesterol</th>
+            <td>{{ patient.cholesterol }}</td>
+        </tr>
+    </table>
+
+    <!-- AI Analysis -->
+    <div class="row mt-4">
+        <div class="col-8">
+            <h4 class="text-primary mb-3"><i class="bi bi-cpu-fill me-2"></i>Predictive Intelligence Report</h4>
+            <div class="p-4 bg-light rounded border border-dark border-opacity-10 mb-3 anim-slide-up anim-delay-1">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center border-end">
+                        <div class="text-muted extra-small fw-bold text-uppercase mb-1">Deep Risk Score</div>
+                        <div
+                            class="display-5 fw-bold mb-0 {% if analysis.level == 'High Risk' %}text-danger{% elif analysis.level == 'Moderate Risk' %}text-warning{% else %}text-success{% endif %}">
+                            {{ analysis.risk_score }}%
+                        </div>
+                        <div class="small fw-bold text-uppercase">{{ analysis.level }}</div>
+                        <div class="extra-small text-muted mt-2">Baseline: {{ analysis.traditional_risk }}%</div>
+                    </div>
+                    <div class="col-md-8 px-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small fw-bold">Clinical Confidence</span>
+                            <span class="small fw-bold">{{ analysis.confidence_score }}%</span>
+                        </div>
+                        <div class="progress progress-report mb-3"
+                            title="Concentration: {{ analysis.confidence_score }}%">
+                            <div class="progress-bar {% if analysis.confidence_score > 80 %}bg-success{% elif analysis.confidence_score > 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                role="progressbar" style="width:{{ analysis.confidence_score }}%"
+                                aria-label="Clinical Confidence Score"></div>
+                        </div>
+                        <div class="p-2 bg-white border rounded">
+                            <h6 class="extra-small fw-bold text-info text-uppercase mb-1">Neural Model Insights (LSTM
+                                Simulation)</h6>
+                            {% if analysis.deep_risk_details.temporal_insights %}
+                            {% for insight in analysis.deep_risk_details.temporal_insights %}
+                            <p class="extra-small mb-1 text-dark italic">→ {{ insight }}</p>
+                            {% endfor %}
+                            {% else %}
+                            <p class="extra-small mb-0 text-muted italic">Static profile assessment. No temporal shifts
+                                observed.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 text-center">
+            {% if patient.qr_code %}
+            <img src="{{ patient.qr_code.url }}" width="110" class="border p-2 bg-white shadow-sm"
+                alt="Patient QR Code">
+            <p class="extra-small text-muted mt-2 fw-bold uppercase">Search ID: #{{ patient.id }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- XAI Explanation -->
+    <h5 class="mt-4 text-primary border-bottom pb-2">Transparency Analysis (Feature Impact)</h5>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead class="bg-light">
+                <tr>
+                    <th>Clinical Signal / Driver</th>
+                    <th class="text-end">Risk Weight Contribution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in analysis.feature_importance %}
+                <tr>
+                    <td class="small">{{ item.feature }}</td>
+                    <td class="text-end fw-bold small text-danger">+{{ item.impact }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td class="small fw-bold">Calculated Risk Score</td>
+                    <td class="text-end fw-bold text-primary">{{ analysis.risk_score }}%</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <h5 class="mt-4">Clinical Findings & Warnings</h5>
+    {% if analysis.alerts %}
+    <ul class="list-unstyled">
+        {% for alert in analysis.alerts %}
+        <li class="small text-danger mb-1 d-flex">
+            <span class="me-2">•</span>
+            <span>{{ alert }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="small">No critical threshold breaches detected.</p>
+    {% endif %}
+
+    <h5 class="mt-4 text-primary">Evidence-Based Recommendations</h5>
+    {% if analysis.recommendations %}
+    <ul class="list-unstyled">
+        {% for item in analysis.recommendations %}
+        <li class="small mb-1 d-flex">
+            <span class="text-primary me-2">→</span>
+            <span>{{ item }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Summary -->
+    <h5 class="mt-4">Patient-Friendly Summary</h5>
+    <p>{{ analysis.summary }}</p>
+
+    <h5 class="mt-4">Document Intelligence</h5>
+    {% if documents %}
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Document</th>
+                    <th>Type</th>
+                    <th>AI Parse</th>
+                    <th>Parsed Highlights</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td>{{ doc.title }}</td>
+                    <td>{{ doc.get_doc_type_display }}</td>
+                    <td>{{ doc.get_verification_status_display }}</td>
+                    <td>
+                        {% if doc.parsed_data.lab_values %}
+                        Labs: {{ doc.parsed_data.lab_values }}
+                        {% elif doc.parsed_data.medications %}
+                        Medications parsed: {{ doc.parsed_data.medications|length }}
+                        {% else %}
+                        No structured entities found
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No documents uploaded yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <div class="text-end">
+        <p><strong>Generated by:</strong> Care & Cure AI System</p>
+        <p><strong>Date:</strong> {{ today }}</p>
+    </div>
+
+    <div class="text-center mt-4">
+        <button onclick="window.print()" class="btn btn-primary" type="button">
+            Print / Save as PDF
+        </button>
+    </div>
+
+</div>
+
+{% endblock %}

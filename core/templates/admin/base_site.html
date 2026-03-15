@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Care & Cure Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <div class="d-flex align-items-center">
+        <span style="color: #fff; font-weight: 800; letter-spacing: -1px;">Care</span><span
+            style="color: var(--secondary, #60a5fa); font-weight: 300;">&</span><span
+            style="color: #fff; font-weight: 800; letter-spacing: -1px;">Cure</span>
+        <span
+            style="font-size: 11px; opacity: 0.6; font-weight: 400; margin-left: 12px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px; text-transform: uppercase; letter-spacing: 1px;">
+            Admin Portal
+        </span>
+    </div>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom_admin.css' %}">
+<style>
+    /* Inline fixes for base admin positioning */
+    #header #branding h1 {
+        margin-top: 5px !important;
+    }
+
+    #user-tools {
+        font-weight: 600 !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    #user-tools a {
+        color: #fff !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

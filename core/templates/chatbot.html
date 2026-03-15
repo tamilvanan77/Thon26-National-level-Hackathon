@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+
+        <div class="card shadow p-4">
+
+            <h3 class="text-center mb-3 text-primary">
+                Care & Cure AI Medical Assistant
+            </h3>
+
+            <!-- Chat Display Area -->
+            <div id="assistantPageThread" class="chat-thread" style="height:400px;">
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-group mt-3">
+                <input type="text" id="assistantPageInput" 
+                       class="form-control" 
+                       placeholder="Ask about cholesterol, BP, heart risk...">
+                <button id="assistantPageSend" class="btn btn-success" type="button">
+                    Send
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.CareCureChat) {
+        window.CareCureChat.bindInlineAssistant({
+            inputId: "assistantPageInput",
+            threadId: "assistantPageThread",
+            sendButtonId: "assistantPageSend"
+        });
+    }
+});
+</script>
+ 
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block branding %}
+<h1 id="site-name">
+    <div class="d-flex align-items-center"
+        style="display: flex; align-items: center; justify-content: center; padding: 20px 0;">
+        <span style="color: #fff; font-weight: 800; letter-spacing: -1px; font-size: 2rem;">Care</span><span
+            style="color: #60a5fa; font-weight: 300; font-size: 2rem;">&</span><span
+            style="color: #fff; font-weight: 800; letter-spacing: -1px; font-size: 2rem;">Cure</span>
+    </div>
+</h1>
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom_admin.css' %}">
+<style>
+    body.login {
+        background: #0f172a !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    #container {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        width: 100%;
+        max-width: 400px;
+        padding: 40px !important;
+        overflow: hidden;
+    }
+
+    #header {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    #content {
+        padding: 0 !important;
+    }
+
+    .login .form-row {
+        padding: 15px 0 !important;
+        border: none !important;
+    }
+
+    .login label {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-weight: 500 !important;
+        margin-bottom: 8px !important;
+        display: block;
+    }
+
+    .login input[type=text],
+    .login input[type=password] {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        padding: 12px 15px !important;
+        border-radius: 12px !important;
+    }
+
+    .login input[type=text]:focus,
+    .login input[type=password]:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2) !important;
+    }
+
+    .submit-row {
+        background: transparent !important;
+        padding: 20px 0 0 0 !important;
+        border: none !important;
+    }
+
+    .submit-row input {
+        width: 100% !important;
+        height: 50px !important;
+        font-size: 1rem !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,14 @@
+.env
+db.sqlite3
+__pycache__/
+*.pyc
+media/
+.gemini/
+.agents/
+.agent/
+_agents/
+_agent/
+brain/
+walkthrough.md
+task.md
+implementation_plan.md

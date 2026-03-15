@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .register-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.9);
+        -webkit-backdrop-filter: blur(15px);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 100%;
+        max-width: 600px;
+        transition: transform 0.3s ease;
+    }
+
+    .register-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%);
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+    }
+
+    .register-body {
+        padding: 2.5rem;
+    }
+
+    .role-toggle {
+        display: flex;
+        background: #f0f2f5;
+        border-radius: 12px;
+        padding: 5px;
+        margin-bottom: 2rem;
+    }
+
+    .role-btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .role-btn.active {
+        background: white;
+        color: #0d6efd;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: white;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    }
+
+    .btn-register {
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-top: 1rem;
+    }
+
+    .patient-id-note {
+        background: #e7f1ff;
+        color: #0d6efd;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .patient-id-note i {
+        margin-right: 10px;
+    }
+</style>
+
+<div class="register-container anim-fade-in">
+    <div class="register-card">
+        <div class="register-header">
+            <h2 class="mb-1">Create Account</h2>
+            <p class="opacity-75 mb-0">Join the Care & Cure Healthcare Network</p>
+        </div>
+
+        <div class="register-body">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'register' %}">
+                {% csrf_token %}
+                <input type="hidden" name="role" value="patient">
+
+                <div class="patient-id-note">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Patient ID will be auto-generated upon registration.
+                </div>
+
+                <div class="row">
+                    <!-- Standard Patient Form -->
+                    {% for field in form %}
+                    <div
+                        class="{% if 'password' in field.name or 'email' in field.name or 'full_name' in field.name %}col-12{% else %}col-md-6{% endif %} mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <div class="text-muted extra-small mt-1">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-register shadow-sm">
+                    Complete Patient Registration
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="text-muted mb-0">Already have an account?
+                    <a href="{% url 'login' %}" class="fw-bold text-decoration-none">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

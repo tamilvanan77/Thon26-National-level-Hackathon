@@ -1,0 +1,259 @@
+:root{
+    --bg-soft:#f4f8ff;
+    --brand:#0d6efd;
+    --brand-dark:#0b4fb8;
+    --text:#1f2a37;
+    --surface:#ffffff;
+    --border:#d9e2f5;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    color:var(--text);
+    background:linear-gradient(135deg,var(--bg-soft),#ffffff);
+    min-height:100vh;
+}
+
+.container{
+    animation:fadeIn .6s ease-in-out;
+}
+
+.page-shell{
+    min-height:calc(100vh - 190px);
+}
+
+.card{
+    border-radius:15px;
+    border:1px solid rgba(13,110,253,.08);
+    background:#fff;
+    transition:.3s ease;
+    box-shadow:0 12px 24px rgba(9, 37, 76, .07);
+}
+
+.card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+input,select,textarea{
+    border-radius:8px!important;
+    transition:.3s;
+}
+
+input:focus,textarea:focus,select:focus{
+    border-color:var(--brand)!important;
+    box-shadow:0 0 0 3px rgba(13,110,253,.16)!important;
+}
+
+button,.btn{
+    border-radius:8px!important;
+    font-weight:500;
+    transition:.3s ease;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.navbar{
+    box-shadow:0 6px 18px rgba(2, 49, 116, .2);
+}
+
+.navbar-brand{
+    letter-spacing:.4px;
+}
+
+.risk-low{
+    color:#198754;
+    font-weight:600;
+}
+
+.risk-moderate{
+    color:#fd7e14;
+    font-weight:600;
+}
+
+.risk-high{
+    color:#dc3545;
+    font-weight:600;
+}
+
+.alert{
+    border-radius:10px;
+}
+
+.chat-btn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:var(--brand);
+    color:#fff;
+    border:none;
+    width:56px;
+    height:56px;
+    padding:0;
+    border-radius:50%;
+    font-size:15px;
+    font-weight:700;
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+    cursor:pointer;
+    transition:.3s;
+    z-index:999;
+}
+
+.chat-btn:hover{
+    background:var(--brand-dark);
+    transform:scale(1.05);
+}
+
+.chatbox{
+    position:fixed;
+    bottom:80px;
+    right:20px;
+    width:320px;
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 8px 25px rgba(0,0,0,.15);
+    padding:15px;
+    display:none;
+    z-index:999;
+}
+
+.chatbox.is-open{
+    display:block;
+}
+
+.chat-header{
+    font-weight:600;
+    margin-bottom:10px;
+    color:var(--brand);
+}
+
+.chat-thread{
+    height:220px;
+    overflow-y:auto;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px;
+    background:#f8fbff;
+}
+
+.chat-thread-compact{
+    height:150px;
+}
+
+.chat-msg{
+    margin-bottom:8px;
+    padding:8px 10px;
+    border-radius:10px;
+    max-width:94%;
+}
+
+.chat-msg-user{
+    margin-left:auto;
+    background:#dce9ff;
+}
+
+.chat-msg-ai{
+    margin-right:auto;
+    background:#eaf7ef;
+}
+
+.chat-msg-label{
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:2px;
+}
+
+.chat-msg-text{
+    font-size:14px;
+    line-height:1.4;
+    white-space:pre-wrap;
+}
+
+#chat-content{
+    height:180px;
+    overflow-y:auto;
+    font-size:14px;
+    margin-bottom:10px;
+}
+
+#chat-input{
+    border-radius:8px;
+}
+
+.table{
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:0;
+}
+
+.table th{
+    font-weight:600;
+}
+
+img{
+    border-radius:10px;
+}
+
+footer{
+    font-size:14px;
+    letter-spacing:.5px;
+    margin-top:auto;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@media(max-width:768px){
+    .chatbox{
+        width:90%;
+        right:5%;
+    }
+    .card{
+        padding:15px!important;
+    }
+    h2,h3{
+        font-size:20px;
+    }
+}
+
+/* --- Luxe Clinical Animations --- */
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(13, 110, 253, 0.2); } 50% { box-shadow: 0 0 15px rgba(13, 110, 253, 0.5); } 100% { box-shadow: 0 0 5px rgba(13, 110, 253, 0.2); } }
+@keyframes scanLine { 0% { transform: translateY(-100%); } 100% { transform: translateY(400px); } }
+.anim-slide-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-delay-1 { animation-delay: 0.1s; }
+.anim-delay-2 { animation-delay: 0.2s; }
+.anim-delay-3 { animation-delay: 0.3s; }
+.glow-ai { animation: glowPulse 3s infinite ease-in-out; }
+.scanning-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, rgba(13, 110, 253, 0.5), transparent); animation: scanLine 4s linear infinite; z-index: 10; pointer-events: none; }
+.tracking-widest { letter-spacing: 0.15em; }
+.extra-small { font-size: 0.75rem; }
+.font-monospace { font-family: 'Courier New', Courier, monospace; }
+
+/* --- Polish Utilities --- */
+.progress-clinical { height: 8px; width: 120px; border-radius: 4px; }
+.progress-report { height: 6px; }
+.bg-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+.card-brain-bg { font-size: 140px; transform: translate(30%, 30%); position: absolute; bottom: 0; right: 0; opacity: 0.1; }
+.border-soft { border: 1px solid rgba(255, 255, 255, 0.1); }
+.italic { font-style: italic; }
+.uppercase { text-transform: uppercase; }
+.letter-spacing-1 { letter-spacing: 1px; }
+
+.main-content-layer { position: relative; z-index: 1; }

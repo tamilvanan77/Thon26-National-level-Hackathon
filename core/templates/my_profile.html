@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow p-4 mb-4">
+            <h4 class="text-primary d-flex justify-content-between align-items-center">
+                My Details
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#editContactForm" aria-expanded="false" aria-controls="editContactForm">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </button>
+            </h4>
+            <hr>
+            <div class="patient-details-list">
+                <p><strong>Name:</strong> {{ patient.full_name|default:patient.user.username }}</p>
+                <p><strong>Age:</strong> {{ patient.age }}</p>
+                <p><strong>Blood Pressure:</strong> {{ patient.blood_pressure }}</p>
+                <p><strong>Cholesterol:</strong> {{ patient.cholesterol }}</p>
+                <p><strong>Diagnosis:</strong> {{ patient.diagnosis|default:"Not updated" }}</p>
+                <p><strong>Medications:</strong> {{ patient.medications|default:"Not updated" }}</p>
+                <p><strong>Risk Score:</strong> <span id="currentRiskScore">{{ analysis.risk_score }}</span>%</p>
+                <p id="currentRiskLevel" class="
+                    {% if analysis.level == 'Low Risk' %}text-success
+                    {% elif analysis.level == 'Moderate Risk' %}text-warning
+                    {% else %}text-danger
+                    {% endif %}
+                    fw-bold">
+                    {{ analysis.level }}
+                </p>
+            </div>
+
+            <div class="collapse mt-3" id="editContactForm">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold mb-3">Update Contact Information</h6>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_contact">
+                        
+                        {% for field in contact_form %}
+                        <div class="mb-2">
+                            <label class="form-label extra-small fw-bold text-muted">{{ field.label|upper }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                            <div class="text-danger extra-small">{{ field.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill">Save Contact Info</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <a href="{% url 'report' patient.id %}" class="btn btn-primary w-100 mt-3 rounded-pill shadow-sm">View Full Clinical Report</a>
+        </div>
+
+        <div class="card shadow p-4">
+            <h4 class="text-primary">Contact Info</h4>
+            <hr>
+            <div class="extra-small text-uppercase tracking-widest text-muted fw-bold mb-2">Primary Contact</div>
+            <p class="mb-1"><i class="bi bi-telephone-fill text-primary me-2"></i> {{ patient.phone_number|default:"Not provided" }}</p>
+            <p class="mb-3"><i class="bi bi-envelope-fill text-primary me-2"></i> {{ patient.user.email|default:"Not provided" }}</p>
+            
+            <div class="extra-small text-uppercase tracking-widest text-muted fw-bold mb-2">Address Details</div>
+            <p class="mb-0 small">
+                {{ patient.address|default:"No address stored" }}<br>
+                {% if patient.city %}{{ patient.city }}{% endif %}{% if patient.state %}, {{ patient.state }}{% endif %}<br>
+                {% if patient.pincode %}PIN: {{ patient.pincode }}{% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow p-4 mb-4">
+            <h4 class="text-primary">Patient Access Mode</h4>
+            <hr>
+            <p class="mb-0">This is a view-only page for patients. Medical record updates and report uploads are handled by your doctor.</p>
+        </div>
+
+        <div class="card shadow p-4">
+            <h4 class="text-success">Request Doctor Appointment</h4>
+            <hr>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="request_appointment">
+                {% for field in appointment_form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-success">Send Request</button>
+            </form>
+        </div>
+
+        <div class="card shadow p-4 mt-4">
+            <h4 class="text-primary">My Prescriptions & Lab Reports</h4>
+            {% if documents %}
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Title</th>
+                            <th>Uploaded By</th>
+                            <th>AI Parse</th>
+                            <th>Date</th>
+                            <th>File</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                        <tr>
+                            <td>{{ doc.get_doc_type_display }}</td>
+                            <td>{{ doc.title }}</td>
+                            <td>{{ doc.uploaded_by.username }}</td>
+                            <td>{{ doc.get_verification_status_display }}</td>
+                            <td>{{ doc.created_at|date:"Y-m-d H:i" }}</td>
+                            <td><a href="{{ doc.file.url }}" target="_blank">Open</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="mb-0">No files uploaded by doctor yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card shadow p-4 mt-4">
+            <h4 class="text-primary">Appointment History</h4>
+            {% if appointments %}
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Reason</th>
+                            <th>Preferred Date</th>
+                            <th>Status</th>
+                            <th>Doctor Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in appointments %}
+                        <tr>
+                            <td>Dr. {{ appt.doctor.user.username }}</td>
+                            <td>{{ appt.reason }}</td>
+                            <td>{{ appt.preferred_date|default:"Not set" }}</td>
+                            <td>{{ appt.get_status_display }}</td>
+                            <td>{{ appt.response_note|default:"-" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="mb-0">No appointments requested yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

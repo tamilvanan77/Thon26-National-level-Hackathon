@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    :root {
+        --medical-blue: #0d6efd;
+        --medical-light: #f0f7ff;
+        --medical-dark: #0a58ca;
+        --glass-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--medical-blue), var(--medical-dark));
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        margin-bottom: -4rem;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.2);
+    }
+
+    .doctor-avatar-large {
+        width: 80px;
+        height: 80px;
+        background: white;
+        color: var(--medical-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .stat-card {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        border-left: 5px solid var(--medical-blue);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--medical-light);
+        color: var(--medical-blue);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .main-content-area {
+        position: relative;
+        z-index: 2;
+        padding-top: 2rem;
+    }
+
+    .dashboard-section-card {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    .table thead th {
+        background-color: var(--medical-light);
+        color: var(--medical-dark);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        border: none;
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding: 1rem 0.75rem;
+    }
+
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-approved { background: #d4edda; color: #155724; }
+    .badge-rejected { background: #f8d7da; color: #721c24; }
+
+    .btn-action {
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+        transform: scale(1.05);
+    }
+
+    .verification-banner {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .nav-tabs-custom {
+        border: none;
+        background: #eee;
+        padding: 5px;
+        border-radius: 10px;
+        display: inline-flex;
+    }
+
+    .nav-tabs-custom .nav-link {
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .nav-tabs-custom .nav-link.active {
+        background: white;
+        color: var(--medical-blue);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+</style>
+
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="dashboard-header d-md-flex align-items-center justify-content-between anim-slide-up">
+        <div class="d-flex align-items-center mb-3 mb-md-0">
+            <div class="doctor-avatar-large me-4">
+                {{ profile.full_name|default:request.user.username|slice:":1"|upper }}
+            </div>
+            <div>
+                <h1 class="h3 fw-bold mb-1">Doctor Dashboard</h1>
+                <p class="mb-0 opacity-75">
+                    Dr. {{ profile.full_name|default:request.user.username }} | 
+                    <span class="badge bg-white bg-opacity-25">{{ profile.specialization|default:"Medical Professional" }}</span>
+                </p>
+                <p class="small mb-0 opacity-50"><i class="bi bi-hospital me-1"></i> {{ profile.hospital_name|default:"City Medical Hospital" }}</p>
+            </div>
+        </div>
+        <div class="text-md-end">
+            <p class="mb-1 small opacity-75">Welcome back,</p>
+            <h5 class="fw-bold mb-0">Helping lives every day</h5>
+        </div>
+    </div>
+
+    <div class="main-content-area">
+        <!-- Verification Alerts -->
+        {% if not profile.is_verified %}
+        <div class="alert alert-warning verification-banner shadow-sm mb-4 d-flex align-items-center anim-slide-up anim-delay-1">
+            <i class="bi bi-clock-history fs-3 me-3"></i>
+            <div>
+                <h6 class="fw-bold mb-1">Account Pending Verification</h6>
+                <p class="small mb-0">Access to some advanced clinical tools is restricted. Our medical board is reviewing your credentials.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-5 anim-slide-up anim-delay-2">
+            <div class="col-md-3">
+                <div class="card stat-card p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small fw-bold text-uppercase mb-1">Total Patients</h6>
+                            <h2 class="fw-bold mb-0">{{ stats.total_patients }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card p-4" style="border-left-color: #20c997;">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: #e9fbf6; color: #20c997;">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small fw-bold text-uppercase mb-1">Today</h6>
+                            <h2 class="fw-bold mb-0">{{ stats.today_appointments }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card p-4" style="border-left-color: #ffc107;">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: #fff9e6; color: #ffc107;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small fw-bold text-uppercase mb-1">Pending</h6>
+                            <h2 class="fw-bold mb-0">{{ stats.pending_requests }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card p-4" style="border-left-color: #0d6efd; cursor: pointer;" onclick="window.location.href='{% url 'visual_diagnosis' %}'">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3" style="background: #eef4ff; color: #0d6efd;">
+                            <i class="bi bi-camera-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small fw-bold text-uppercase mb-1">AI Vision</h6>
+                            <h2 class="fw-bold mb-0">Analysis</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Patient List Section -->
+            <div class="col-lg-7 anim-slide-up anim-delay-3">
+                <div class="card dashboard-section-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Patient List</h5>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3">View All</button>
+                    </div>
+                    {% if patients %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Disease</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in patients %}
+                                <tr>
+                                    <td><span class="text-muted small font-monospace">PAT-{{ p.id|stringformat:"03d" }}</span></td>
+                                    <td>
+                                        <div class="fw-bold">{{ p.full_name|default:p.user.username }}</div>
+                                    </td>
+                                    <td>{{ p.age|default:"N/A" }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark fw-normal">{{ p.diagnosis|default:"Not updated" }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'patient_profile' p.id %}" class="btn btn-sm btn-primary btn-action shadow-sm">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-person-slash display-4 mb-3"></i>
+                        <p>No patients assigned to your care yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Appointments Section -->
+            <div class="col-lg-5 anim-slide-up anim-delay-4">
+                <div class="card dashboard-section-card h-100 p-4">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-calendar-event me-2 text-primary"></i>Appointment Requests</h5>
+                    {% if appointments %}
+                    <div class="appointment-list">
+                        {% for item in appointments|slice:":5" %}
+                        <div class="p-3 border rounded-3 mb-3 bg-light bg-opacity-50">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold">{{ item.patient.full_name|default:item.patient.user.username }}</div>
+                                    <div class="text-muted extra-small">
+                                        <i class="bi bi-calendar3 me-1"></i> {{ item.preferred_date|default:"TBD" }}
+                                        <i class="bi bi-clock-fill ms-2 me-1"></i> {{ item.preferred_time|default:"TBD" }}
+                                    </div>
+                                </div>
+                                <span class="badge badge-{{ item.status }} rounded-pill extra-small">{{ item.get_status_display }}</span>
+                            </div>
+                            <p class="small text-muted mb-3 italic">"{{ item.reason|truncatewords:10 }}"</p>
+                            
+                            <form method="post" action="{% url 'appointment_update' item.id %}" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <select name="status" class="form-select form-select-sm" title="Update Status">
+                                    <option value="pending" {% if item.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="approved" {% if item.status == 'approved' %}selected{% endif %}>Approve</option>
+                                    <option value="rejected" {% if item.status == 'rejected' %}selected{% endif %}>Reject</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-success btn-action">Update</button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if appointments.count > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="#" class="small text-decoration-none">View all requests ({{ appointments.count }})</a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x display-4 mb-3"></i>
+                        <p>No appointment requests found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Profile Management Section -->
+        <div class="row mt-4 anim-slide-up anim-delay-5">
+            <div class="col-12">
+                <div class="card dashboard-section-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-gear-fill me-2 text-primary"></i>Professional Profile</h5>
+                        <button class="btn btn-link btn-sm text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#profileFormCollapse">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Details
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 text-center border-end">
+                            <i class="bi bi-person-badge display-1 text-light"></i>
+                            <div class="mt-2 fw-bold">{{ profile.full_name|default:request.user.username }}</div>
+                            <div class="text-muted small">Doctor ID: DOC-{{ profile.id|stringformat:"03d" }}</div>
+                        </div>
+                        <div class="col-md-9 ps-md-4">
+                            <div id="profileFormDetails">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="text-muted extra-small fw-bold text-uppercase d-block mb-1">Qualification</label>
+                                        <div class="p-2 bg-light rounded">{{ profile.degree|default:"Not set" }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted extra-small fw-bold text-uppercase d-block mb-1">Specialization</label>
+                                        <div class="p-2 bg-light rounded">{{ profile.specialization|default:"Not set" }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted extra-small fw-bold text-uppercase d-block mb-1">Years of Experience</label>
+                                        <div class="p-2 bg-light rounded">{{ profile.experience|default:"0" }} Years</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted extra-small fw-bold text-uppercase d-block mb-1">Clinic/Hospital</label>
+                                        <div class="p-2 bg-light rounded">{{ profile.hospital_name|default:"City Medical Hospital" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="collapse mt-4" id="profileFormCollapse">
+                                <div class="p-4 border rounded-3 bg-light">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="row g-3">
+                                            {% for field in form %}
+                                            <div class="col-md-6">
+                                                <label class="form-label small fw-bold">{{ field.label }}</label>
+                                                {{ field }}
+                                                {% if field.errors %}
+                                                <div class="text-danger extra-small mt-1">{{ field.errors|striptags }}</div>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="mt-4">
+                                            <button type="submit" class="btn btn-primary btn-action shadow-sm me-2">Save Profile Updates</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-action" data-bs-toggle="collapse" data-bs-target="#profileFormCollapse">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

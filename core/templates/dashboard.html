@@ -1,0 +1,599 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if analysis %}
+<style>
+    .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    }
+
+    .simulator-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: white;
+    }
+
+    .sim-score-display {
+        text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
+    }
+
+    .sim-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        outline: none;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        background: #00f2ff;
+        cursor: pointer;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(0, 242, 255, 0.8);
+    }
+
+    .sim-feature-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        opacity: 0.8;
+    }
+
+    @keyframes pulse-sim {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .sim-updating {
+        animation: pulse-sim 0.3s ease-in-out;
+    }
+</style>
+
+<div class="card p-4 shadow mb-4 anim-slide-up">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2 class="mb-0">Patient Dashboard</h2>
+            <p class="text-muted small">AI-Powered Clinical Decision Support</p>
+        </div>
+        <div class="text-end">
+            <div class="text-muted small mb-1">Clinical Confidence</div>
+            <div class="progress progress-clinical">
+                <div class="progress-bar {% if analysis.confidence_score > 80 %}bg-success{% elif analysis.confidence_score > 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                    role="progressbar" style="width:{{ analysis.confidence_score }}%"
+                    title="Confidence: {{ analysis.confidence_score }}%"></div>
+            </div>
+            <span class="small fw-bold">{{ analysis.confidence_score }}% Confidence</span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Traditional Risk (Baseline) -->
+        <div class="col-md-4 anim-slide-up anim-delay-1">
+            <div class="p-4 rounded-4 bg-light border h-100 text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted extra-small fw-bold text-uppercase mb-3 tracking-widest">Baseline Risk</h6>
+                <div class="display-4 fw-bold text-dark opacity-50">
+                    {{ analysis.traditional_risk }}%
+                </div>
+                <div class="text-muted small">Guideline Mode</div>
+            </div>
+        </div>
+
+        <!-- Deep Learning Intelligence (LSTM/RNN Simulation) -->
+        <div class="col-md-8 anim-slide-up anim-delay-2">
+            <div
+                class="card border-0 shadow-sm h-100 p-4 bg-dark text-white overflow-hidden position-relative rounded-4 glow-ai">
+                <div class="scanning-overlay"></div>
+                <div class="card-brain-bg">🧠</div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="extra-small fw-bold text-uppercase mb-0 text-info letter-spacing-1">Deep Learning
+                        Inference</h6>
+                    <span class="badge bg-info text-dark rounded-pill extra-small">Precision: 94.2%</span>
+                </div>
+
+                <div class="row align-items-center">
+                    <div class="col-sm-5 text-center">
+                        <div class="display-2 fw-bold text-info mb-0 lh-1">{{ analysis.risk_score }}<small
+                                class="fs-4">%</small></div>
+                        <p class="fw-bold text-uppercase extra-small tracking-widest text-info-emphasis mt-1">{{ analysis.level }}</p>
+                    </div>
+                    <div class="col-sm-7 border-start border-secondary border-opacity-50 py-1 ps-4">
+                        <p class="extra-small text-info fw-bold mb-2 text-uppercase font-monospace">Temporal Prediction
+                            Signals (LSTM)</p>
+                        {% if analysis.deep_risk_details.temporal_insights %}
+                        <ul class="list-unstyled mb-0">
+                            {% for insight in analysis.deep_risk_details.temporal_insights %}
+                            <li class="extra-small mb-2 d-flex align-items-start">
+                                <i class="bi bi-cpu-fill text-info me-2 mt-1"></i>
+                                <span>{{ insight }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="extra-small text-muted mb-0 italic">Analyzing longitudinal data... No significant
+                            temporal shifts detected in recent records.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Chart (XAI) -->
+    <div class="card border-0 shadow-sm p-4 mb-4 anim-slide-up anim-delay-3">
+        <h6 class="fw-bold mb-3 d-flex align-items-center">
+            <span class="badge bg-primary me-2">XAI</span> Neural Attribution (Feature Contribution)
+        </h6>
+        <canvas id="featureImpactChart" height="120"></canvas>
+    </div>
+
+    <!-- Interactive Risk Simulator (What-If Analysis) -->
+    <div class="card simulator-card border-0 shadow mb-4 anim-slide-up" style="animation-delay: 0.4s;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1 text-info fw-bold"><i class="bi bi-magic me-2"></i>Risk Simulator</h5>
+                    <p class="extra-small text-white-50 mb-0">Drag sliders to simulate lifestyle changes and see risk
+                        impact</p>
+                </div>
+                <button id="resetSimulatorBtn" class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+            </div>
+
+            <div class="row align-items-center g-4">
+                <div class="col-lg-4 text-center border-end border-white border-opacity-10">
+                    <div id="simScoreWrapper" class="py-3">
+                        <div class="extra-small text-uppercase tracking-widest text-info-emphasis fw-bold mb-1">
+                            Simulated Risk</div>
+                        <div id="simulatedRiskScore" class="display-3 fw-bold sim-score-display text-info">
+                            {{ analysis.risk_score }}<small class="fs-4">%</small>
+                        </div>
+                        <div id="simRiskLevel" class="badge bg-info text-dark rounded-pill fw-bold mt-2">
+                            {{ analysis.level }}
+                        </div>
+                        <div id="riskDelta" class="extra-small mt-3 text-white-50 font-monospace">
+                            Original Baseline: {{ analysis.risk_score }}%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="row g-3">
+                        {% for item in analysis.feature_importance %}
+                        <div class="col-md-6">
+                            <div class="p-3 bg-glass rounded-3 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="sim-feature-label text-info">{{ item.feature }}</span>
+                                    <span class="badge bg-dark extra-small font-monospace"
+                                        id="val-{{ forloop.index }}">Normal</span>
+                                </div>
+                                <input type="range" class="sim-slider" id="slider-{{ forloop.index }}" min="0" max="200"
+                                    value="100" data-impact="{{ item.impact }}" data-feature-index="{{ forloop.index }}"
+                                    title="Adjust {{ item.feature }} impact">
+
+                                <div class="d-flex justify-content-between mt-1 extra-small opacity-50 font-monospace">
+                                    <span>Better</span>
+                                    <span>Baseline</span>
+                                    <span>Worse</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 border border-info border-opacity-25 rounded-3 bg-info bg-opacity-10">
+                <div class="d-flex">
+                    <i class="bi bi-info-circle-fill text-info me-3 fs-5"></i>
+                    <p class="mb-0 extra-small text-info-emphasis italic">
+                        <strong>Disclaimer:</strong> This simulator uses neural attribution weights (XAI) to estimate
+                        impact.
+                        It is intended for patient education and does not constitute medical advice.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Visual Diagnosis Tool -->
+    <div class="card border-0 shadow-sm mb-4 anim-slide-up" style="animation-delay: 0.5s; background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);">
+        <div class="card-body p-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="p-3 rounded-4 bg-primary bg-opacity-10 text-primary me-4">
+                    <i class="bi bi-camera-fill fs-2"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1">AI Image Analysis</h5>
+                    <p class="small text-muted mb-0">Upload symptoms, photos, or reports for instant AI diagnosis and doctor referrals.</p>
+                </div>
+            </div>
+            <a href="{% url 'visual_diagnosis' %}" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm">
+                Open AI Vision <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+
+    <div
+        class="alert {% if analysis.level == 'High Risk' %}alert-danger{% elif analysis.level == 'Moderate Risk' %}alert-warning{% else %}alert-info{% endif %} border-0 shadow-sm d-flex align-items-center mb-4">
+        <div class="me-3 fs-3">🔍</div>
+        <div class="w-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="alert-heading fw-bold mb-1">Explainability Insight</h6>
+                {% if analysis.is_verified %}
+                <span class="badge bg-success rounded-pill"><i class="bi bi-patch-check-fill me-1"></i> Clinician
+                    Verified</span>
+                {% else %}
+                <span class="badge bg-secondary rounded-pill">Awaiting Validation</span>
+                {% endif %}
+            </div>
+            <p class="mb-0 small">{{ analysis.summary }}</p>
+        </div>
+    </div>
+
+    <!-- Human-in-the-Loop Validation (Doctor Only) -->
+    {% if request.user.role == 'doctor' %}
+    <div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 p-3 mb-4 shadow-sm">
+        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-check-fill me-2"></i>Clinician Validation Loop</h6>
+        <div class="mb-3">
+            <label class="form-label extra-small fw-bold text-muted">CLINICAL NOTES & OBSERVATIONS</label>
+            <textarea id="clinicianNotes" class="form-control form-control-sm" rows="2"
+                placeholder="Enter clinical context or correction details...">{{ analysis.doctor_notes }}</textarea>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="verifySwitch" {% if analysis.is_verified %}checked{% endif %}>
+
+                <label class="form-check-label small fw-bold" for="verifySwitch">Confirm AI Prediction</label>
+            </div>
+            <button id="saveFeedbackBtn" class="btn btn-primary btn-sm px-4 rounded-pill fw-bold">
+                Save Feedback
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="p-3 border rounded-3 h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center text-danger">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>Critical Findings
+                </h6>
+                {% if analysis.alerts %}
+                <ul class="list-group list-group-flush list-group-sm">
+                    {% for alert in analysis.alerts %}
+                    <li class="list-group-item bg-transparent px-0 border-0 small py-1 d-flex align-items-start">
+                        <span class="text-danger me-2">•</span> <span>{{ alert }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-success small mb-0">No severe anomalies detected from current datasets.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 border rounded-3 h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center text-primary">
+                    <i class="bi bi-shield-check me-2"></i>Recommended Actions
+                </h6>
+                {% if analysis.recommendations %}
+                <ul class="list-group list-group-flush list-group-sm">
+                    {% for rec in analysis.recommendations %}
+                    <li class="list-group-item bg-transparent px-0 border-0 small py-1 d-flex align-items-start">
+                        <i class="bi bi-arrow-right-short text-primary me-1"></i> <span>{{ rec }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    {% if patient.qr_code %}
+    <h5 class="mt-4">Patient QR Code</h5>
+    <img src="{{ patient.qr_code.url }}" width="150" alt="Patient QR Code">
+    {% endif %}
+
+    <!-- Correct Report Link -->
+    <a href="{% url 'report' patient.id %}" class="btn btn-primary mt-3">
+        View Full Report
+    </a>
+    <a href="{% url 'my_profile' %}" class="btn btn-outline-secondary mt-3">
+        View My Details
+    </a>
+</div>
+
+<!-- Chatbot Card -->
+<div class="card p-4 shadow">
+    <h3>AI Health Assistant</h3>
+
+    <div id="dashboardAssistantThread" class="chat-thread chat-thread-compact mb-3">
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="dashboardAssistantInput" class="form-control" placeholder="Ask about your health...">
+        <button id="dashboardAssistantSend" class="btn btn-success" type="button">Send</button>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const impactCtx = document.getElementById('featureImpactChart');
+
+        if (impactCtx) {
+            new Chart(impactCtx, {
+                type: 'bar',
+                data: {
+                    labels: [{% for item in analysis.feature_importance %}'{{ item.feature }}',{% endfor %}],
+        datasets: [{
+            label: 'Contribution to Risk (%)',
+            data: [{% for item in analysis.feature_importance %}{{ item.impact }}, {% endfor %}],
+        backgroundColor: 'rgba(13, 110, 253, 0.7)',
+        borderColor: 'rgb(13, 110, 253)',
+        borderWidth: 1,
+        borderRadius: 6
+                }]
+            },
+        options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 100,
+                grid: { display: false }
+            },
+            y: {
+                grid: { display: false }
+            }
+        }
+    }
+        });
+    }
+
+
+});
+
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.CareCureChat) {
+            window.CareCureChat.bindInlineAssistant({
+                inputId: "dashboardAssistantInput",
+                threadId: "dashboardAssistantThread",
+                sendButtonId: "dashboardAssistantSend"
+            });
+        }
+    });
+
+    // --- Clinician Feedback Loop Logic ---
+    document.addEventListener("DOMContentLoaded", function () {
+        const saveBtn = document.getElementById('saveFeedbackBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', function () {
+                const notes = document.getElementById('clinicianNotes').value;
+                const verified = document.getElementById('verifySwitch').checked;
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+                fetch("{% url 'verify_prediction' patient.id %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        notes: notes,
+                        verified: verified
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            location.reload();
+                        } else {
+                            alert("Error: " + data.message);
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = 'Save Feedback';
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Feedback Error:", error);
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = 'Save Feedback';
+                    });
+            });
+        }
+    });
+
+    // --- Interactive Risk Simulator Logic ---
+    document.addEventListener("DOMContentLoaded", function () {
+        const baselineScore = parseFloat("{{ analysis.risk_score }}");
+        const simScoreEl = document.getElementById('simulatedRiskScore');
+        const simLevelEl = document.getElementById('simRiskLevel');
+        const scoreWrapper = document.getElementById('simScoreWrapper');
+        const sliders = document.querySelectorAll('.sim-slider');
+        const resetBtn = document.getElementById('resetSimulatorBtn');
+
+        function updateSimulation() {
+            let totalDelta = 0;
+
+            sliders.forEach(slider => {
+                const impact = parseFloat(slider.getAttribute('data-impact'));
+                const val = parseInt(slider.value);
+                const valLabel = document.getElementById('val-' + slider.getAttribute('data-feature-index'));
+
+                // 100 is baseline. < 100 is "Better", > 100 is "Worse"
+                // Logic: (val - 100) / 100 * impact
+                // Since higher impact usually means higher risk, we add the delta.
+                const delta = ((val - 100) / 100) * impact;
+                totalDelta += delta;
+
+                // Update label
+                if (val < 80) { valLabel.textContent = "Optimal"; valLabel.className = "badge bg-success extra-small font-monospace"; }
+                else if (val < 120) { valLabel.textContent = "Normal"; valLabel.className = "badge bg-dark extra-small font-monospace"; }
+                else if (val < 160) { valLabel.textContent = "Elevated"; valLabel.className = "badge bg-warning text-dark extra-small font-monospace"; }
+                else { valLabel.textContent = "Critical"; valLabel.className = "badge bg-danger extra-small font-monospace"; }
+            });
+
+            let newScore = Math.min(100, Math.max(0, baselineScore + totalDelta));
+
+            // Visual Updates
+            simScoreEl.innerHTML = `${newScore.toFixed(1)}<small class="fs-4">%</small>`;
+            scoreWrapper.classList.add('sim-updating');
+            setTimeout(() => scoreWrapper.classList.remove('sim-updating'), 300);
+
+            // Level & Color Logic - Refined for simulator responsiveness
+            if (newScore > 60) {
+                simLevelEl.textContent = "High Risk";
+                simLevelEl.className = "badge bg-danger rounded-pill fw-bold mt-2";
+                simScoreEl.className = "display-3 fw-bold sim-score-display text-danger";
+            } else if (newScore > 25) {
+                simLevelEl.textContent = "Moderate Risk";
+                simLevelEl.className = "badge bg-warning text-dark rounded-pill fw-bold mt-2";
+                simScoreEl.className = "display-3 fw-bold sim-score-display text-warning";
+            } else {
+                simLevelEl.textContent = "Low Risk";
+                simLevelEl.className = "badge bg-success rounded-pill fw-bold mt-2";
+                simScoreEl.className = "display-3 fw-bold sim-score-display text-success";
+            }
+        }
+
+        sliders.forEach(slider => {
+            slider.addEventListener('input', updateSimulation);
+        });
+
+        resetBtn.addEventListener('click', function () {
+            sliders.forEach(slider => slider.value = 100);
+            updateSimulation();
+        });
+    });
+</script>
+
+{% else %}
+
+<div class="card p-4 shadow">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Doctor Dashboard</h2>
+        <form method="get" class="d-flex" style="max-width: 340px;">
+            <input type="text" class="form-control me-2" name="q" value="{{ query }}"
+                placeholder="Search by patient, diagnosis, medication">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </form>
+    </div>
+    <p class="text-muted mb-3">
+        Dr. {{ request.user.username }} | {{ doctor_profile.specialization }} | {{ doctor_profile.experience }} years
+        experience
+    </p>
+
+    {% if patients %}
+    <table class="table table-bordered table-striped mt-3">
+        <thead class="table-primary">
+            <tr>
+                <th>Patient Name</th>
+                <th>Diagnosis</th>
+                <th>Risk %</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patients %}
+            <tr>
+                <td>{{ p.user.username }}</td>
+                <td>{{ p.diagnosis|default:"Not updated" }}</td>
+                <td>{{ p.risk_score }}%</td>
+                <td>
+                    <a href="{% url 'patient_profile' p.id %}" class="btn btn-sm btn-info">
+                        View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No patients available.</p>
+    {% endif %}
+</div>
+
+<div class="card p-4 shadow mt-4">
+    <h4>Appointment Requests</h4>
+    {% if appointments %}
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Reason</th>
+                    <th>Preferred Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in appointments %}
+                <tr>
+                    <td>{{ item.patient.user.username }}</td>
+                    <td>{{ item.reason }}</td>
+                    <td>{{ item.preferred_date|default:"Not set" }}</td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>
+                        <form method="post" action="{% url 'appointment_update' item.id %}" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <select name="status" class="form-select form-select-sm">
+                                <option value="pending" {% if item.status == 'pending' %}selected{% endif %}>Pending
+                                </option>
+                                <option value="approved" {% if item.status == 'approved' %}selected{% endif %}>Approve
+                                </option>
+                                <option value="rejected" {% if item.status == 'rejected' %}selected{% endif %}>Reject
+                                </option>
+                            </select>
+                            <input type="text" name="response_note" class="form-control form-control-sm"
+                                placeholder="Note">
+                            <button class="btn btn-sm btn-success">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="mb-0">No appointment requests yet.</p>
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% endblock %}

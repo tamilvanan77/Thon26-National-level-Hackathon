@@ -1,0 +1,129 @@
+<div class="medical-background">
+    <div class="particle p1"></div>
+    <div class="particle p2"></div>
+    <div class="particle p3"></div>
+    <div class="particle p4"></div>
+    <div class="particle p5"></div>
+    <div class="medical-icon i1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+        </svg>
+    </div>
+    <div class="medical-icon i2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4.5 12.5l3 3 7-7" />
+        </svg>
+    </div>
+</div>
+
+<style>
+    .medical-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%);
+        pointer-events: none;
+    }
+
+    .particle {
+        position: absolute;
+        background: rgba(13, 110, 253, 0.05);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+    }
+
+    .p1 {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        left: -100px;
+        animation-duration: 25s;
+    }
+
+    .p2 {
+        width: 200px;
+        height: 200px;
+        bottom: 10%;
+        right: -50px;
+        animation-duration: 30s;
+    }
+
+    .p3 {
+        width: 150px;
+        height: 150px;
+        top: 40%;
+        left: 15%;
+        animation-duration: 20s;
+    }
+
+    .p4 {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        left: 40%;
+        animation-duration: 18s;
+    }
+
+    .p5 {
+        width: 250px;
+        height: 250px;
+        top: 10%;
+        right: 10%;
+        animation-duration: 35s;
+    }
+
+    .medical-icon {
+        position: absolute;
+        color: rgba(13, 110, 253, 0.03);
+        width: 150px;
+        height: 150px;
+    }
+
+    .i1 {
+        top: 20%;
+        right: 20%;
+        animation: pulse-slow 8s infinite ease-in-out;
+    }
+
+    .i2 {
+        bottom: 20%;
+        left: 10%;
+        animation: pulse-slow 10s infinite ease-in-out;
+    }
+
+    @keyframes float {
+        0% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+            transform: translate(30px, 50px) rotate(120deg);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+        }
+
+        100% {
+            transform: translate(0, 0) rotate(360deg);
+        }
+    }
+
+    @keyframes pulse-slow {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.3;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.5;
+        }
+    }
+</style>
